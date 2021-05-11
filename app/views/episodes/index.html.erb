@@ -1,0 +1,60 @@
+<div class="card mt-5 p-4">
+  <h1 class="title">Find That Episode!</h1>
+  <div class="input-group mb-3">
+    <div id="searchbox" class="form-control" > </div>
+  </div>
+  <div class="text mb-4" id="stats"></div>
+  <div id="hits"></div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/algoliasearch@4.5.1/dist/algoliasearch-lite.umd.js" integrity="sha256-EXPXz4W6pQgfYY3yTpnDa3OH8/EPn16ciVsPQ/ypsjk=" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/instantsearch.js@4.8.3/dist/instantsearch.production.min.js" integrity="sha256-LAGhRRdtVoD6RLo2qDQsU2mp+XVSciKRC8XPOBWmofM=" crossorigin="anonymous"></script>
+<script type="text/javascript">
+  $(document).ready(function(){
+  
+  const searchClient = algoliasearch(
+  '<%= ENV['ALGOLIA_SEARCH_APP_ID'] %>',
+  '<%= ENV['ALGOLIA_SEARCH_ONLY_KEY'] %>');
+  
+  const search = instantsearch({
+  indexName: 'Episode_development',
+  searchClient,
+  });
+  
+  search.addWidgets([
+  instantsearch.widgets.searchBox({
+    container: '#searchbox',
+  }),
+  
+  instantsearch.widgets.hits({
+    container: '#hits',
+    templates: {
+      empty: 'No results for <q>{{ query }}</q>',
+      item: '<div class="d-flex flex-row justify-content-between mb-3">'
+      +'<div class="details d-flex flex-column p-3 ">'
+    +'<h2 class="mb-1">{{#helpers.highlight}}{ "attribute": "name" }{{/helpers.highlight}}</h2>'
+    +'<div class="text">'
+      +'{{#helpers.highlight}}{ "attribute": "summary" }{{/helpers.highlight}}'
+      +'</div>'
+      +'</div>'
+      +'<div class="show pt-3 pl-3">'
+      +'<h3 class="mb-2" >{{show_name}}</h4>'
+      +'<h4 class="mb-2" >S{{season}}</h4>'
+      +'<h5>Epi {{number}}</h5>'
+      +'</div>'
+      +'</div>'
+      },
+      escapeHTML: false
+      }),
+  
+    instantsearch.widgets.stats({
+      container: '#stats',
+       templates: {
+        text: '{{#hasNoResults}}No results{{/hasNoResults}}'+
+        '{{#hasOneResult}}1 result{{/hasOneResult}}'+
+        '{{#hasManyResults}}{{#helpers.formatNumber}}{{nbHits}}{{/helpers.formatNumber}} results{{/hasManyResults}} found in {{processingTimeMS}}ms',
+       },
+    })
+  ]);
+    search.start();
+  });
+</script>
